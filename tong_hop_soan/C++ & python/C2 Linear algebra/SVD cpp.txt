@@ -1,0 +1,87 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include "Eigen/Dense"
+
+using namespace std;
+using namespace Eigen;
+
+// Hàm tính ma trận chuyển vị
+MatrixXd transpose(const MatrixXd& matrix) {
+    return matrix.transpose();
+}
+
+// Hàm tính A^T * A
+MatrixXd compute_at_a(const MatrixXd& A) {
+    return transpose(A) * A;
+}
+
+// Hàm tính trị riêng và vectơ riêng
+pair<VectorXd, MatrixXd> compute_eigenvalues_and_vectors(const MatrixXd& A) {
+    EigenSolver<MatrixXd> solver(A);
+    return {solver.eigenvalues().real(), solver.eigenvectors().real()};
+}
+
+// Hàm sắp xếp trị riêng và vectơ riêng
+pair<VectorXd, MatrixXd> sort_eigenpairs(const VectorXd& eig_values, const MatrixXd& eig_vectors) {
+    vector<int> indices(eig_values.size());
+    iota(indices.begin(), indices.end(), 0);
+
+    sort(indices.begin(), indices.end(), [&eig_values](int i, int j) {
+        return eig_values(i) > eig_values(j);
+    });
+
+    VectorXd sorted_eig_values(eig_values.size());
+    MatrixXd sorted_eig_vectors(eig_vectors.rows(), eig_vectors.cols());
+
+    for (int i = 0; i < eig_values.size(); ++i) {
+        sorted_eig_values(i) = eig_values(indices[i]);
+        sorted_eig_vectors.col(i) = eig_vectors.col(indices[i]);
+    }
+
+    return {sorted_eig_values, sorted_eig_vectors};
+}
+
+// Hàm tính U từ A và V
+MatrixXd compute_U(const MatrixXd& A, const MatrixXd& V, const VectorXd& sorted_eig_values) {
+    MatrixXd U(A.rows(), V.cols());
+    for (int i = 0; i < sorted_eig_values.size(); ++i) {
+        if (sorted_eig_values(i) > 1e-10) {
+            U.col(i) = A * V.col(i) / sqrt(sorted_eig_values(i));
+        }
+    }
+    return U;
+}
+
+// Hàm chính thực hiện SVD
+tuple<MatrixXd, MatrixXd, MatrixXd> svd(const MatrixXd& A) {
+    MatrixXd AtA = compute_at_a(A);
+
+    auto [eig_values, eig_vectors] = compute_eigenvalues_and_vectors(AtA);
+
+    auto [sorted_eig_values, V] = sort_eigenpairs(eig_values, eig_vectors);
+
+    MatrixXd U = compute_U(A, V, sorted_eig_values);
+
+    MatrixXd Sigma(A.rows(), A.cols());
+    Sigma.setZero();
+    for (int i = 0; i < sorted_eig_values.size(); ++i) {
+        Sigma(i, i) = sqrt(sorted_eig_values(i));
+    }
+
+    return {U, Sigma, V};
+}
+
+int main() {
+    MatrixXd A(3, 2);
+    A << 3, 2, 2, 3, 4, 5;
+
+    auto [U, Sigma, V] = svd(A);
+
+    cout << "Ma trận U:\n" << U << endl;
+    cout << "\nMa trận Sigma:\n" << Sigma << endl;
+    cout << "\nMa trận V:\n" << V << endl;
+
+    return 0;
+}

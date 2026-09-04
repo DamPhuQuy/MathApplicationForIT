@@ -1,0 +1,132 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+// Hoán vị hai giá trị
+void hoanVi(double& c, double& b) {
+    double temp = b;
+    b = c;
+    c = temp;
+}
+
+// Nhập ma trận
+vector<vector<double>> nhapMatran(int n) {
+    vector<vector<double>> a(n, vector<double>(n));
+    cout << "Nhập ma trận " << n << "x" << n << ":\n";
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            cout << "a[" << i << "][" << j << "] = ";
+            cin >> a[i][j];
+        }
+    }
+    return a;
+}
+
+// Xuất ma trận
+void xuatMatran(const vector<vector<double>>& a) {
+    cout << "Ma trận như sau:\n";
+    for (const auto& row : a) {
+        for (const auto& val : row) {
+            cout << val << "\t";
+        }
+        cout << endl;
+    }
+}
+
+// Tạo ma trận con
+vector<vector<double>> maTranCon(const vector<vector<double>>& a, int c, int d) {
+    int n = a.size();
+    vector<vector<double>> subMatrix(n - 1, vector<double>(n - 1));
+    int p = 0, q = 0;
+
+    for (int i = 0; i < n; ++i) {
+        if (i == c) continue;
+        q = 0;
+        for (int j = 0; j < n; ++j) {
+            if (j == d) continue;
+            subMatrix[p][q] = a[i][j];
+            q++;
+        }
+        p++;
+    }
+
+    return subMatrix;
+}
+
+// Tính định thức
+double det(const vector<vector<double>>& a) {
+    int n = a.size();
+    if (n == 1) {
+        return a[0][0];
+    }
+    else if (n == 2) {
+        return a[0][0] * a[1][1] - a[0][1] * a[1][0];
+    }
+    else {
+        double q = 0;
+        for (int i = 0; i < n; ++i) {
+            vector<vector<double>> b = maTranCon(a, 0, i);
+            double detCon = det(b);
+            q += pow(-1, i) * a[0][i] * detCon;
+        }
+        return q;
+    }
+}
+
+// Tính ma trận nghịch đảo
+vector<vector<double>> maTranND(const vector<vector<double>>& a) {
+    int n = a.size();
+    double p = det(a);
+    if (p == 0) {
+        cout << "Ma trận suy biến, không thể tính nghịch đảo.\n";
+        return {};
+    } else {
+        vector<vector<double>> A(n, vector<double>(n));
+        for (int t = 0; t < n; ++t) {
+            for (int i = 0; i < n; ++i) {
+                vector<vector<double>> b = maTranCon(a, i, t);
+                double detCon = det(b);
+                A[t][i] = pow(-1, t + i) * detCon;
+            }
+        }
+
+        // Chia cho định thức
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < n; ++j) {
+                A[i][j] /= p;
+            }
+        }
+        return A;
+}
+
+int main() {
+    try {
+        int n;
+        cout << "Nhập n = ";
+        cin >> n;
+        if (n <= 0) {
+            throw invalid_argument("Kích thước ma trận phải lớn hơn 0!");
+        }
+
+        // Nhập ma trận
+        vector<vector<double>> a = nhapMatran(n);
+        xuatMatran(a);
+
+        // Tính định thức
+        cout << "Định thức của ma trận bằng: " << det(a) << endl;
+
+        // Tính ma trận nghịch đảo
+        vector<vector<double>> nghich_dao = maTranND(a);
+        if (!nghich_dao.empty()) {
+            cout << "Ma trận nghịch đảo như sau:\n";
+            xuatMatran(nghich_dao);
+        }
+
+    } catch (const exception& e) {
+        cout << "Lỗi: " << e.what() << endl;
+    }
+
+    return 0;
+}

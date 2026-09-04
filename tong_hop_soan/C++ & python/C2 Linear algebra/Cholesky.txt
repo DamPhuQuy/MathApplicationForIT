@@ -1,0 +1,125 @@
+Điều kiện phân rã Cholesky:
+Ma trận phải đối xứng:
+
+Ma trận 
+𝐴
+A cần phải đối xứng, nghĩa là 
+𝐴
+=
+𝐴
+𝑇
+A=A 
+T
+ . Điều này có nghĩa là các phần tử ở vị trí 
+𝐴
+[
+𝑖
+]
+[
+𝑗
+]
+A[i][j] và 
+𝐴
+[
+𝑗
+]
+[
+𝑖
+]
+A[j][i] phải bằng nhau cho mọi 
+𝑖
+i và 
+𝑗
+j.
+
+Ví dụ:
+
+𝐴
+=
+[
+4
+2
+2
+2
+3
+1
+2
+1
+2
+]
+A= 
+​
+  
+4
+2
+2
+​
+  
+2
+3
+1
+​
+  
+2
+1
+2
+​
+  
+​
+ 
+Ma trận này đối xứng vì các phần tử tương ứng qua đường chéo chính đều bằng nhau.
+
+Ma trận phải xác định dương (Positive Definite):
+
+Ma trận 
+𝐴
+A cần phải xác định dương, nghĩa là tất cả các trị riêng (eigenvalues) của nó phải dương. Điều này đồng nghĩa với việc:
+
+Mọi định thức của các ma trận con chính (leading principal submatrices) đều dương.
+Với mọi vectơ khác không 
+𝑥
+x, giá trị 
+𝑥
+𝑇
+𝐴
+𝑥
+>
+0
+x 
+T
+ Ax>0.
+Ma trận xác định dương thường có các phần tử trên đường chéo chính đều dương và không có trị riêng âm hoặc bằng 0.
+
+Ví dụ, xét ma trận:
+
+𝐴
+=
+[
+2
+−
+1
+−
+1
+2
+]
+A=[ 
+2
+−1
+​
+  
+−1
+2
+​
+ ]
+Đây là một ma trận xác định dương vì các trị riêng của nó đều lớn hơn 0.
+
+Tổng kết điều kiện:
+Ma trận phải là ma trận vuông: Phân rã Cholesky chỉ áp dụng cho ma trận vuông, tức là ma trận có cùng số hàng và số cột (
+𝑛
+×
+𝑛
+n×n).
+
+Ma trận phải đối xứng: Điều kiện này đảm bảo tính khả thi khi phân tách ma trận thành tích của hai ma trận tam giác dưới và chuyển vị của nó.
+
+Ma trận phải xác định dương: Đảm bảo rằng các phép tính bên trong phân rã không gặp phải căn bậc hai của số âm, vì phương pháp phân rã Cholesky dựa vào việc tính căn bậc hai của các phần tử dương.

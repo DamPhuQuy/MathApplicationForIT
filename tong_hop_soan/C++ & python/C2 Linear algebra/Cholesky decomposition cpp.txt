@@ -1,0 +1,119 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+
+using namespace std;
+
+vector<vector<double>> nhap_matran(int n) {
+    vector<vector<double>> a(n, vector<double>(n));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << "a[" << i << "][" << j << "] = ";
+            cin >> a[i][j];
+        }
+    }
+    return a;
+}
+
+void xuat_matran(const vector<vector<double>>& a) {
+    cout << "Ma trận như sau:" << endl;
+    for (const auto& row : a) {
+        for (const auto& val : row) {
+            cout << fixed << setprecision(2) << val << "\t\t";
+        }
+        cout << endl;
+    }
+}
+
+bool is_symmetric(const vector<vector<double>>& a) {
+    int n = a.size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (a[i][j] != a[j][i]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+vector<vector<double>> cholesky(const vector<vector<double>>& a) {
+    int n = a.size();
+    vector<vector<double>> L(n, vector<double>(n, 0.0));
+    if (!is_symmetric(a)) {
+        cout << "Ma trận phải đối xứng" << endl;
+        return {};
+    }
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j <= i; j++) {
+            double sum_val = 0.0;
+            if (i == j) {
+                for (int k = 0; k < j; k++) {
+                    sum_val += L[j][k] * L[j][k];
+                }
+                L[j][j] = a[j][j] - sum_val;
+                if (L[j][j] <= 0) {
+                    return {};
+                }
+                L[j][j] = sqrt(L[j][j]);
+            } else {
+                for (int k = 0; k < j; k++) {
+                    sum_val += L[i][k] * L[j][k];
+                }
+                L[i][j] = (a[i][j] - sum_val) / L[j][j];
+            }
+        }
+    }
+    return L;
+}
+
+vector<vector<double>> transpose(const vector<vector<double>>& L) {
+    int n = L.size();
+    vector<vector<double>> LT(n, vector<double>(n));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            LT[j][i] = L[i][j];
+        }
+    }
+    return LT;
+}
+
+vector<vector<double>> multiply_matrix(const vector<vector<double>>& L, const vector<vector<double>>& LT) {
+    int n = L.size();
+    vector<vector<double>> result(n, vector<double>(n, 0.0));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            for (int k = 0; k < n; k++) {
+                result[i][j] += L[i][k] * LT[k][j];
+            }
+        }
+    }
+    return result;
+}
+
+int main() {
+    int n;
+    cout << "Nhập n = ";
+    cin >> n;
+    auto a = nhap_matran(n);
+    cout << "Ma trận gốc A:" << endl;
+    xuat_matran(a);
+
+    auto L = cholesky(a);
+    if (!L.empty()) {
+        cout << "Ma trận L (tam giác dưới):" << endl;
+        xuat_matran(L);
+
+        auto LT = transpose(L);
+        cout << "Ma trận chuyển vị của L (L^T):" << endl;
+        xuat_matran(LT);
+
+        auto A_reconstructed = multiply_matrix(L, LT);
+        cout << "Ma trận A = L * L^T:" << endl;
+        xuat_matran(A_reconstructed);
+    } else {
+        cout << "Ma trận không xác định dương" << endl;
+    }
+
+    return 0;
+}

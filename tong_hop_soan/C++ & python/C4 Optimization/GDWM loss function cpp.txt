@@ -1,0 +1,80 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <Eigen/Dense>
+#include <random>
+
+using namespace std;
+using namespace Eigen;
+
+MatrixXd grad(const MatrixXd &Xbar, const MatrixXd &y, const MatrixXd &w) {
+    int N = Xbar.rows();
+    return (1.0 / N) * Xbar.transpose() * (Xbar * w - y);
+}
+
+double l(const MatrixXd &Xbar, const MatrixXd &y, const MatrixXd &w) {
+    int N = Xbar.rows();
+    return 0.5 / N * (Xbar * w - y).squaredNorm();
+}
+
+pair<MatrixXd, int> myGradientDescentWithMomentum(const MatrixXd &Xbar, const MatrixXd &y, const MatrixXd &w_init, double alpha, double gamma, int loop, double epsilon) {
+    vector<MatrixXd> w_history;
+    w_history.push_back(w_init);
+
+    MatrixXd v = MatrixXd::Zero(w_init.rows(), 1);
+
+    for (int i = 0; i < loop; ++i) {
+        MatrixXd grad_val = grad(Xbar, y, w_history.back());
+        v = alpha * v + gamma * grad_val;
+        MatrixXd w_new = w_history.back() - v;
+
+        if ((grad(Xbar, y, w_new).norm() / w_new.rows()) < epsilon) {
+            return make_pair(w_new, i + 1);
+        }
+
+        w_history.push_back(w_new);
+    }
+
+    return make_pair(w_history.back(), loop);
+}
+
+int main() {
+    int N = 1000;
+    mt19937 gen(2);
+    uniform_real_distribution<double> dist(0.0, 1.0);
+    normal_distribution<double> noise(0.0, 0.2);
+
+    MatrixXd X(N, 1);
+    MatrixXd y(N, 1);
+    for (int i = 0; i < N; ++i) {
+        double x_val = dist(gen);
+        X(i, 0) = x_val;
+        y(i, 0) = 4 + 3 * x_val + noise(gen);
+    }
+
+    MatrixXd one = MatrixXd::Ones(N, 1);
+    MatrixXd Xbar(N, 2);
+    Xbar << one, X;
+
+    MatrixXd w_init(2, 1);
+    w_init << 2, 1;
+
+    double alpha = 0.9;   // Learning rate
+    double gamma = 0.01;  // Momentum term
+    pair<MatrixXd, int> result = myGradientDescentWithMomentum(Xbar, y, w_init, alpha, gamma, 1000, 1e-4);
+
+    MatrixXd w_gdwm = result.first;
+    int it1 = result.second;
+
+    cout << "Phuong phap Gradient Descent with Momentum: w = \n" << w_gdwm.transpose()
+         << ",\n after " << it1 << " iterations."
+         << ",\n l = " << l(Xbar, y, w_gdwm) << endl;
+
+    MatrixXd A = Xbar.transpose() * Xbar;
+    MatrixXd b = Xbar.transpose() * y;
+    MatrixXd w_lr = A.completeOrthogonalDecomposition().solve(b);
+
+    cout << "Phuong phap nghich dao: w = \n" << w_lr.transpose() << endl;
+
+    return 0;
+}
