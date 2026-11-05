@@ -1,0 +1,6 @@
+**/vcpkg/
+vcpkg/
+**/*.exe
+*.exe
+**/.vscode/
+.vscode/
